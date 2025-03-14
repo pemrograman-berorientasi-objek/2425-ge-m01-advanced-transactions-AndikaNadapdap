@@ -1,0 +1,109 @@
+package fintech.model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+class Account {
+    private String username;
+    private String owner;
+    private double balance;
+    private List<Transaction> transactions;
+
+    public Account(String owner, String username) {
+        this.owner = owner;
+        this.username = username;
+        this.balance = 0.0;
+        this.transactions = new ArrayList<>();
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public void addTransaction(Transaction transaction) {
+        if (transaction.getAmount() < 0 && balance + transaction.getAmount() < 0) {
+            return; // Ignore transactions that result in negative balance
+        }
+        transactions.add(transaction);
+        balance += transaction.getAmount();
+    }
+
+    public void showAccount() {
+        System.out.println(username + "|" + owner + "|" + balance);
+        for (Transaction t : transactions) {
+            System.out.println(t);
+        }
+    }
+}
+
+class Transaction {
+    private static int counter = 1;
+    private int id;
+    private String username;
+    private double amount;
+    private String timestamp;
+    private String description;
+
+    public Transaction(String username, double amount, String timestamp, String description) {
+        this.id = counter++;
+        this.username = username;
+        this.amount = amount;
+        this.timestamp = timestamp;
+        this.description = description;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+
+    @Override
+    public String toString() {
+        return id + "|" + username + "|" + amount + "|" + timestamp + "|" + description;
+    }
+}
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
+
+public class Driver1 {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        Map<String, Account> accounts = new HashMap<>();
+
+        while (scanner.hasNextLine()) {
+            String[] parts = scanner.nextLine().split("#");
+            switch (parts[0]) {
+                case "create-account":
+                    String owner = parts[1];
+                    String username = parts[2];
+                    accounts.put(username, new Account(owner, username));
+                    break;
+                case "create-transaction":
+                    username = parts[1];
+                    double amount = Double.parseDouble(parts[2]);
+                    String timestamp = parts[3];
+                    String description = parts[4];
+                    if (accounts.containsKey(username)) {
+                        accounts.get(username).addTransaction(new Transaction(username, amount, timestamp, description));
+                    }
+                    break;
+                case "show-account":
+                    username = parts[1];
+                    if (accounts.containsKey(username)) {
+                        accounts.get(username).showAccount();
+                    }
+                    break;
+            }
+        }
+        scanner.close();
+    }
+}
